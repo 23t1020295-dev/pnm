@@ -1,4 +1,5 @@
-from flask import Flask, request, redirect, abort
+from flask import Flask, request, redirect, abort, make_response
+from markupsafe import escape  
 
 app = Flask(__name__)
 
@@ -43,6 +44,7 @@ def index():
     <h3>Liên kết điều hướng:</h3>
     <ul>
         <li><a href="/students">Xem danh sách sinh viên (/students)</a></li>
+        <li><a href="/search">Tìm kiếm sinh viên (/search)</a></li>
         <li><a href="/api/students">Xem API sinh viên (/api/students)</a></li>
     </ul>
     """
@@ -148,6 +150,8 @@ def student_detail(mssv):
     <p><b>Lớp:</b> <a href="/students?lop={student['Lop']}">{student['Lop']}</a></p>
     <p><b>Điểm TB:</b> {avg_score if avg_score is not None else '-'}</p>
     <p><b>Xếp loại:</b> {grade}</p>
+    <p><b>Link rút gọn (Câu 4):</b> <a href="/sv/{mssv}">http://127.0.0.1:8000/sv/{mssv}</a></p>
+    <p>📥 <b><a href="/students/{mssv}/export">Tải bảng điểm (CSV)</a></b></p>
     
     <h3>Bảng điểm từng học phần:</h3>
     {score_table_html}
@@ -156,11 +160,67 @@ def student_detail(mssv):
     <a href="/students">← Quay lại danh sách sinh viên</a>
     """
 
-# CÂU 4: LINK RÚT GỌN (/sv/<mssv>)
 @app.route('/sv/<mssv>')
 def short_link(mssv):
-    # Chuyển hướng tới /students/<mssv> với mã trạng thái HTTP 301
     return redirect(f"/students/{mssv}", code=301)
+
+@app.route('/students/<mssv>/export')
+def export_csv(mssv):
+    if mssv not in STUDENTS:
+        abort(404, description=f"Không có sinh viên với MSSV = {mssv}.")
+
+    student = STUDENTS[mssv]
+    scores_dict = student["scores"]
+
+    csv_lines = ["hoc_phan,diem"]
+    for subject, score in scores_dict.items():
+        csv_lines.append(f"{subject},{score}")
+    
+    csv_content = "\n".join(csv_lines)
+
+    response = make_response(csv_content)
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    response.headers['Content-Disposition'] = f'attachment; filename=diem_{mssv}.csv'
+    
+    return response
+
+@app.route('/search')
+def search_students():
+    q = request.args.get('q', '')
+    
+    safe_q = escape(q)
+    
+    results_html = ""
+    if q.strip():
+        search_kw = q.strip().lower()
+        matched_students = []
+
+        for mssv, info in STUDENTS.items():
+            if search_kw in info["name"].lower() or search_kw in mssv.lower():
+                matched_students.append((mssv, info))
+
+        count = len(matched_students)
+        results_html += f"<h3>Tìm thấy {count} kết quả cho \"{safe_q}\"</h3>"
+
+        if count > 0:
+            results_html += "<ul>"
+            for mssv, info in matched_students:
+                results_html += f'<li><a href="/students/{mssv}">{info["name"]} ({mssv})</a> - Lớp: {info["Lop"]}</li>'
+            results_html += "</ul>"
+        else:
+            results_html += "<p>Không tìm thấy sinh viên nào phù hợp.</p>"
+
+    return f"""
+    <h2>Tìm kiếm Sinh viên</h2>
+    <form method="GET" action="/search">
+        <input type="text" name="q" value="{safe_q}" placeholder="Nhập tên hoặc MSSV..." style="padding: 5px; width: 250px;">
+        <button type="submit" style="padding: 5px 10px;">Tìm kiếm</button>
+    </form>
+    <br>
+    {results_html}
+    <br>
+    <a href="/">← Quay lại Trang chủ</a>
+    """
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
