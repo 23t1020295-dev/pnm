@@ -26,12 +26,10 @@ def format_number(val):
 
 @app.route('/', methods=['GET', 'POST'])
 def calculator():
-    # Giá trị giữ lại trên form
     raw_a = ""
     raw_b = ""
     op = "+"
     
-    # Lỗi hiển thị dưới từng ô
     error_a = None
     error_b = None
     general_error = None
@@ -42,31 +40,25 @@ def calculator():
         raw_b = request.form.get('b', '').strip()
         op = request.form.get('op', '').strip()
 
-        # Kiểm tra tính hợp lệ của toán tử (chống can thiệp bằng DevTools)
         allowed_ops = ['+', '-', '*', '/']
         if op not in allowed_ops:
             general_error = "Phép toán không hợp lệ."
 
-        # Parse số a và b
         num_a, err_a = parse_number(raw_a)
         num_b, err_b = parse_number(raw_b)
 
-        # Xử lý thông báo lỗi cho các trường hợp
         if err_a and err_b:
             error_a = "Vui lòng nhập một số."
             error_b = "Vui lòng nhập một số."
-            # Nếu cả 2 đều trống/sai, có thể gắn thông báo chung hoặc hiển thị ở từng ô
         else:
             if err_a:
                 error_a = err_a
             if err_b:
                 error_b = err_b
 
-        # Kiểm tra phép chia cho 0
         if not err_b and op == '/' and num_b == 0:
             error_b = "Không thể chia cho 0."
 
-        # Nếu không có lỗi nào, tiến hành tính toán
         if not error_a and not error_b and not general_error:
             res_val = None
             if op == '+':
@@ -78,7 +70,6 @@ def calculator():
             elif op == '/':
                 res_val = num_a / num_b
 
-            # Định dạng chuỗi kết quả: "a op b = result"
             str_a = format_number(num_a)
             str_b = format_number(num_b)
             str_res = format_number(round(res_val, 4))
