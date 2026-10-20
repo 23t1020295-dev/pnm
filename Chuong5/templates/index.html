@@ -44,7 +44,6 @@
     <h2>Bài 1 ★. Máy tính cơ bản</h2>
 
     <form method="POST" action="">
-        <!-- Số thứ nhất a -->
         <div class="form-group">
             <input type="text" name="a" placeholder="Số thứ nhất" value="{{ raw_a }}">
             {% if error_a %}
@@ -52,7 +51,6 @@
             {% endif %}
         </div>
 
-        <!-- Phép toán op -->
         <div class="form-group">
             <select name="op">
                 <option value="+" {% if op == '+' %}selected{% endif %}>+</option>
@@ -62,7 +60,6 @@
             </select>
         </div>
 
-        <!-- Số thứ hai b -->
         <div class="form-group">
             <input type="text" name="b" placeholder="Số thứ hai" value="{{ raw_b }}">
             {% if error_b %}
@@ -74,7 +71,6 @@
             <button type="submit">Tính</button>
         </div>
 
-        <!-- Lỗi chung (can thiệp phép tính không hợp lệ qua DevTools) -->
         {% if general_error %}
             <div>
                 <span class="error">{{ general_error }}</span>
@@ -82,7 +78,6 @@
         {% endif %}
     </form>
 
-    <!-- Kết quả mong đợi -->
     {% if result %}
         <div class="result-box">
             Kết quả: {{ result }}
