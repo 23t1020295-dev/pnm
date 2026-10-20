@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Điểm Học Phần</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #2b95ce, #9b63c8, #d84587);
+            background-size: 200% 200%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .icon-hat {
+            display: inline-flex; justify-content: center; align-items: center;
+            width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%; margin-bottom: 15px; font-size: 24px;
+        }
+        .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .header p { font-size: 14px; color: rgba(255, 255, 255, 0.8); }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px; padding: 20px; margin-bottom: 20px;
+        }
+        .section-title { display: flex; align-items: center; font-weight: 600; font-size: 16px; margin-bottom: 15px; }
+        .section-title i { margin-right: 10px; color: rgba(255, 255, 255, 0.9); }
+        .input-row { display: flex; gap: 15px; }
+        .input-group { flex: 1; }
+        .input-group label { display: block; font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px; }
+        .input-group input {
+            width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 15px; border-radius: 8px; color: white; font-size: 15px; font-family: inherit;
+            outline: none; transition: all 0.3s;
+        }
+        .input-group input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .input-group input:focus { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.5); }
+
+        .btn-calc {
+            width: 100%; background: linear-gradient(90deg, #7b5eea, #694cc2); color: white;
+            border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.3s, transform 0.1s; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(105, 76, 194, 0.4);
+        }
+        .btn-calc i { margin-right: 8px; }
+        .btn-calc:hover { opacity: 0.9; }
+        .btn-calc:active { transform: scale(0.98); }
+
+        .result-area { border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 30px; margin-top: 20px; }
+        .result-title { text-align: center; font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .score-cards { display: flex; gap: 15px; margin-bottom: 20px; }
+        .score-card {
+            flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px; padding: 15px; text-align: center; position: relative; overflow: hidden;
+        }
+        .score-card::after {
+            content: ''; position: absolute; right: -10px; bottom: -10px; width: 60px; height: 60px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;
+        }
+        .score-label { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.8); margin-bottom: 8px; }
+        .score-value { font-size: 28px; font-weight: 700; }
+        .score-value.f-grade { color: #ff5e5e; }
+
+        .status-bar {
+            background: rgba(255, 94, 94, 0.3); border: 1px solid rgba(255, 94, 94, 0.4);
+            border-radius: 12px; padding: 12px; text-align: center; font-weight: 600; font-size: 16px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .status-bar i { margin-left: 8px; font-size: 14px; }
+        .status-bar.passed { background: rgba(76, 175, 80, 0.3); border-color: rgba(76, 175, 80, 0.4); }
+
+        .error-text { color: #ffcdcd; font-size: 12px; margin-top: 5px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-panel">
+        
+        <div class="header">
+            <div class="icon-hat">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h1>Tính Điểm Học Phần</h1>
+            <p>Nhập điểm và trọng số để xem kết quả hệ 10, hệ 4 và điểm chữ.</p>
+        </div>
+
+        <form method="POST" action="">
+            <!-- Điểm Chuyên Cần -->
+            <div class="input-section">
+                <div class="section-title"><i class="fa-solid fa-user-check"></i> Điểm Chuyên Cần</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Điểm (0-10)</label>
+                        <!-- Giữ lại giá trị người dùng nhập bằng Jinja {{ raw_cc }}, nếu chưa nhập sẽ rỗng -->
+                        <input type="text" name="cc" placeholder="Vd: 9.0" value="{{ raw_cc }}">
+                        {% if error_cc %}<span class="error-text">{{ error_cc }}</span>{% endif %}
+                    </div>
+                    <div class="input-group">
+                        <label>Trọng số (%)</label>
+                        <input type="text" name="cc_weight" placeholder="Vd: 10" value="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Điểm Giữa Kỳ -->
+            <div class="input-section">
+                <div class="section-title"><i class="fa-solid fa-book-open"></i> Điểm Giữa Kỳ</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Điểm (0-10)</label>
+                        <input type="text" name="gk" placeholder="Vd: 8.5" value="{{ raw_gk }}">
+                        {% if error_gk %}<span class="error-text">{{ error_gk }}</span>{% endif %}
+                    </div>
+                    <div class="input-group">
+                        <label>Trọng số (%)</label>
+                        <input type="text" name="gk_weight" placeholder="Vd: 30" value="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Điểm Cuối Kỳ -->
+            <div class="input-section">
+                <div class="section-title"><i class="fa-solid fa-award"></i> Điểm Cuối Kỳ</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Điểm (0-10)</label>
+                        <input type="text" name="ck" placeholder="Vd: 7.0" value="{{ raw_ck }}">
+                        {% if error_ck %}<span class="error-text">{{ error_ck }}</span>{% endif %}
+                    </div>
+                    <div class="input-group">
+                        <label>Trọng số (%)</label>
+                        <input type="text" name="ck_weight" placeholder="Vd: 60" value="">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-calc">
+                <i class="fa-solid fa-calculator"></i> Tính Điểm Ngay
+            </button>
+        </form>
+
+       <!-- Khối Kết Quả được bọc trong Jinja IF để ẩn đi khi chưa có kết quả tính toán -->
+       {% if calculated %}
+       <div class="result-area">
+           <h3 class="result-title">Kết Quả Học Phần</h3>
+           
+           <div class="score-cards">
+               <div class="score-card">
+                   <div class="score-label">Hệ 10</div>
+                   <div class="score-value">{{ he_10 }}</div>
+               </div>
+               
+               <div class="score-card">
+                   <div class="score-label">Hệ 4</div>
+                   <div class="score-value">{{ he_4 }}</div>
+               </div>
+               
+               <div class="score-card">
+                   <div class="score-label">Điểm Chữ</div>
+                   <div class="score-value {% if diem_chu == 'F' %}f-grade{% endif %}">{{ diem_chu }}</div>
+               </div>
+           </div>
+
+           <div class="status-bar {% if trang_thai == 'Qua môn' %}passed{% endif %}">
+               {{ trang_thai }} 
+               {% if trang_thai == 'Qua môn' %}
+                   <i class="fa-solid fa-check"></i>
+               {% else %}
+                   <i class="fa-solid fa-xmark"></i>
+               {% endif %}
+           </div>
+       </div>
+       {% endif %}
+
+        </div>
+
+</body>
+</html>
